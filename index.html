@@ -3,64 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Circuito Clone - Arduino Circuit Designer</title>
+    <title>Circuito.io भारत - Arduino Circuit Designer & E-commerce</title>
     <link rel="stylesheet" href="css/style.css">
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 </head>
 <body>
     <div id="app" class="app-container">
-        <!-- Header -->
+        <!-- Header with Language Toggle -->
         <header class="header">
             <div class="header-left">
-                <h1 class="logo">circuito.io</h1>
+                <h1 class="logo">circuito.io भारत</h1>
+                <span class="tagline">Arduino Circuits & Components</span>
+            </div>
+            <div class="header-center">
+                <button class="language-btn" onclick="toggleLanguage()">हिंदी / English</button>
             </div>
             <div class="header-right">
-                <button id="cart-btn" class="cart-button">Parts (0)</button>
+                <button id="cart-btn" class="cart-button" onclick="showCart()">
+                    🛒 Cart (<span id="cart-count">0</span>)
+                </button>
+                <button class="checkout-btn" onclick="proceedCheckout()" style="display:none" id="checkout-btn">
+                    💳 Checkout
+                </button>
             </div>
         </header>
 
-        <!-- Main Content -->
+        <!-- Main Container -->
         <div class="main-container">
             <!-- Left Panel - Components -->
             <aside class="left-panel">
                 <div class="search-container">
-                    <input type="text" id="component-search" placeholder="Search for a component" class="search-input">
+                    <input type="text" id="component-search" placeholder="Search components / खोज करें" class="search-input">
                 </div>
 
                 <div class="filter-buttons">
                     <button class="filter-btn active" data-filter="all">All</button>
                     <button class="filter-btn" data-filter="controllers">Controllers</button>
-                    <button class="filter-btn" data-filter="inputs">Inputs</button>
-                    <button class="filter-btn" data-filter="outputs">Outputs</button>
-                    <button class="filter-btn" data-filter="power">Power</button>
+                    <button class="filter-btn" data-filter="sensors">Sensors</button>
+                    <button class="filter-btn" data-filter="actuators">Actuators</button>
+                    <button class="filter-btn" data-filter="passive">Passive</button>
+                    <button class="filter-btn" data-filter="modules">Modules</button>
                 </div>
 
                 <div id="components-grid" class="components-grid"></div>
             </aside>
 
-            <!-- Center Panel - Canvas/Design Area -->
+            <!-- Center Panel -->
             <div class="center-panel">
                 <div class="tabs">
                     <button class="tab-btn active" data-tab="design">DESIGN</button>
                     <button class="tab-btn" data-tab="code">CODE</button>
-                    <button class="tab-btn" data-tab="guide">PROJECT GUIDE</button>
+                    <button class="tab-btn" data-tab="catalog">CATALOG</button>
+                    <button class="tab-btn" data-tab="features">FEATURES</button>
                 </div>
 
                 <!-- Design Tab -->
                 <div id="design-tab" class="tab-content active">
                     <div class="canvas-header">
-                        <h2 id="project-title">Arduino Circuit Designer</h2>
+                        <h2>Arduino Circuit Designer</h2>
                         <div class="canvas-controls">
-                            <button id="clear-btn" class="control-btn">Clear</button>
-                            <button id="generate-btn" class="control-btn primary">Generate Code</button>
+                            <button id="clear-btn" onclick="clearCanvas()" class="control-btn">Clear</button>
+                            <button id="generate-btn" onclick="generateCode()" class="control-btn primary">Generate Code</button>
                         </div>
                     </div>
                     <div id="canvas-container" class="canvas-container">
                         <svg id="canvas" class="canvas"></svg>
                         <div id="canvas-placeholder" class="canvas-placeholder">
-                            <div class="placeholder-content">
-                                <h3>Drag & drop components here</h3>
-                                <p>Select a component from the left panel and drag it to the canvas</p>
-                            </div>
+                            <h3>Drag & drop components</h3>
+                            <p>Select from left panel</p>
                         </div>
                     </div>
                 </div>
@@ -68,38 +78,84 @@
                 <!-- Code Tab -->
                 <div id="code-tab" class="tab-content">
                     <div class="code-header">
-                        <h3>Generated Arduino Code</h3>
-                        <button id="copy-code-btn" class="control-btn">Copy Code</button>
+                        <h3>Arduino Code</h3>
+                        <button id="copy-code-btn" onclick="copyCode()" class="control-btn">Copy</button>
                     </div>
                     <pre id="code-output" class="code-output"><code>// Select components to generate code</code></pre>
                 </div>
 
-                <!-- Guide Tab -->
-                <div id="guide-tab" class="tab-content">
-                    <div class="guide-content">
-                        <h3>Project Guide</h3>
-                        <div id="guide-steps" class="guide-steps"></div>
-                    </div>
+                <!-- Catalog Tab -->
+                <div id="catalog-tab" class="tab-content">
+                    <h3>Component Catalog</h3>
+                    <div id="catalog-content" class="catalog-content"></div>
+                </div>
+
+                <!-- Features Tab -->
+                <div id="features-tab" class="tab-content">
+                    <h3>Circuito.io भारत Features</h3>
+                    <div id="features-list" class="features-list"></div>
                 </div>
             </div>
 
-            <!-- Right Panel - Properties -->
+            <!-- Right Panel - Cart & Properties -->
             <aside class="right-panel">
                 <div class="properties-header">
-                    <h3>Properties</h3>
+                    <h3>Selected Component</h3>
                 </div>
                 <div id="properties-content" class="properties-content">
-                    <p class="no-selection">Select a component to see properties</p>
+                    <p class="no-selection">Select a component</p>
+                </div>
+                
+                <div id="cart-preview" class="cart-preview" style="display:none">
+                    <h4>Shopping Cart</h4>
+                    <div id="cart-items" class="cart-items"></div>
+                    <div class="cart-summary">
+                        <strong>Total: ₹<span id="cart-total">0</span></strong>
+                        <button onclick="proceedCheckout()" class="checkout-btn">Checkout</button>
+                    </div>
                 </div>
             </aside>
         </div>
+
+        <!-- Cart Modal -->
+        <div id="cart-modal" class="modal" style="display:none">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Shopping Cart</h2>
+                    <button onclick="closeCart()" class="close-btn">&times;</button>
+                </div>
+                <div id="modal-cart-items" class="modal-cart-items"></div>
+                <div class="modal-footer">
+                    <div class="cart-totals">
+                        <p>Subtotal: ₹<span id="subtotal">0</span></p>
+                        <p>Shipping: ₹<span id="shipping">0</span></p>
+                        <p><strong>Total: ₹<span id="total">0</span></strong></p>
+                    </div>
+                    <div class="delivery-form">
+                        <h4>Delivery Address (भारत में)</h4>
+                        <input type="text" id="fullname" placeholder="Full Name" class="form-input">
+                        <input type="text" id="phone" placeholder="Phone Number" class="form-input">
+                        <input type="text" id="address" placeholder="Address" class="form-input">
+                        <input type="text" id="city" placeholder="City" class="form-input">
+                        <input type="text" id="pincode" placeholder="PIN Code" class="form-input">
+                        <select id="state" class="form-input">
+                            <option value="">Select State</option>
+                            <option value="AP">Andhra Pradesh</option>
+                            <option value="TG">Telangana</option>
+                            <option value="KA">Karnataka</option>
+                            <option value="TN">Tamil Nadu</option>
+                            <option value="MH">Maharashtra</option>
+                            <option value="DL">Delhi</option>
+                            <option value="UP">Uttar Pradesh</option>
+                        </select>
+                    </div>
+                    <button onclick="initiatePayment()" class="pay-btn">Pay with Razorpay</button>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Scripts -->
-    <script src="js/components.js"></script>
-    <script src="js/wiring.js"></script>
-    <script src="js/canvas.js"></script>
-    <script src="js/generator.js"></script>
-    <script src="js/main.js"></script>
+    <script src="js/components-data.js"></script>
+    <script src="js/app-enhanced.js"></script>
 </body>
 </html>
