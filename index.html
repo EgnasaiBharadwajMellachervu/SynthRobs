@@ -3,155 +3,199 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>SynthRobs - Arduino Circuit Design Platform</title>    <link rel="stylesheet" href="css/style.css">
+    <title>SynthRobs - Arduino Circuit Design Platform</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 </head>
 <body>
     <div id="app" class="app-container">
-        <!-- Header with Language Toggle -->
+        <!-- Language Toggle -->
+        <div class="language-toggle">
+            <button class="lang-btn active" onclick="setLanguage('en')">English</button>
+            <button class="lang-btn" onclick="setLanguage('hi')">हिंदी</button>
+        </div>
+
+        <!-- Header -->
         <header class="header">
             <div class="header-left">
-					<h1 class="logo">SynthRobs</h1>                <span class="tagline">Arduino Circuits & Components</span>
+                <h1 id="brand-name">SynthRobs</h1>
+                <p id="brand-tagline">Arduino Circuits & Components</p>
             </div>
             <div class="header-center">
+                <nav class="nav-tabs">
+                    <button class="tab-btn active" onclick="switchTab('design')" id="tab-design-btn"><i class="fas fa-pencil-alt"></i> DESIGN</button>
+                    <button class="tab-btn" onclick="switchTab('code')" id="tab-code-btn"><i class="fas fa-code"></i> CODE</button>
+                    <button class="tab-btn" onclick="switchTab('catalog')" id="tab-catalog-btn"><i class="fas fa-th-list"></i> CATALOG</button>
+                    <button class="tab-btn" onclick="switchTab('features')" id="tab-features-btn"><i class="fas fa-star"></i> FEATURES</button>
+                </nav>
             </div>
             <div class="header-right">
                 <button id="cart-btn" class="cart-button" onclick="showCart()">
-                    🛒 Cart (<span id="cart-count">0</span>)
-                </button>
-                <button class="checkout-btn" onclick="proceedCheckout()" style="display:none" id="checkout-btn">
-                    💳 Checkout
+                    <i class="fas fa-shopping-cart"></i>
+                    <span id="cart-count" class="cart-count">0</span>
                 </button>
             </div>
         </header>
 
-        <!-- Main Container -->
-        <div class="main-container">
-            <!-- Left Panel - Components -->
-            <aside class="left-panel">
-                <div class="search-container">
-                    <input type="text" id="component-search" placeholder="Search components / खोज करें" class="search-input">
-                </div>
-
-                <div class="filter-buttons">
-                    <button class="filter-btn active" data-filter="all">All</button>
-                    <button class="filter-btn" data-filter="controllers">Controllers</button>
-                    <button class="filter-btn" data-filter="sensors">Sensors</button>
-                    <button class="filter-btn" data-filter="actuators">Actuators</button>
-                    <button class="filter-btn" data-filter="passive">Passive</button>
-                    <button class="filter-btn" data-filter="modules">Modules</button>
-                </div>
-
-                <div id="components-grid" class="components-grid"></div>
-            </aside>
-
-            <!-- Center Panel -->
-            <div class="center-panel">
-                <div class="tabs">
-                    <button class="tab-btn active" data-tab="design">DESIGN</button>
-                    <button class="tab-btn" data-tab="code">CODE</button>
-                    <button class="tab-btn" data-tab="catalog">CATALOG</button>
-                    <button class="tab-btn" data-tab="features">FEATURES</button>
-                </div>
-
-                <!-- Design Tab -->
-                <div id="design-tab" class="tab-content active">
-                    <div class="canvas-header">
-                        <h2>Arduino Circuit Designer</h2>
-                        <div class="canvas-controls">
-                            <button id="clear-btn" onclick="clearCanvas()" class="control-btn">Clear</button>
-                            <button id="generate-btn" onclick="generateCode()" class="control-btn primary">Generate Code</button>
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- DESIGN TAB -->
+            <section id="design-tab" class="tab-content active">
+                <div class="design-container">
+                    <!-- Left Panel: Components -->
+                    <aside class="components-panel">
+                        <div class="search-box">
+                            <input type="text" id="component-search" placeholder="Search components / खोज करें" onkeyup="filterComponents()" class="search-input">
+                            <i class="fas fa-search search-icon"></i>
                         </div>
-                    </div>
-                    <div id="canvas-container" class="canvas-container">
-                        <svg id="canvas" class="canvas"></svg>
-                        <div id="canvas-placeholder" class="canvas-placeholder">
-                            <h3>Drag & drop components</h3>
-                            <p>Select from left panel</p>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- Code Tab -->
-                <div id="code-tab" class="tab-content">
+                        <div class="component-filters">
+                            <button class="filter-btn active" onclick="filterByCategory('all')" id="filter-all">All</button>
+                            <button class="filter-btn" onclick="filterByCategory('controllers')" id="filter-controllers">Controllers</button>
+                            <button class="filter-btn" onclick="filterByCategory('sensors')" id="filter-sensors">Sensors</button>
+                            <button class="filter-btn" onclick="filterByCategory('outputs')" id="filter-outputs">Outputs</button>
+                            <button class="filter-btn" onclick="filterByCategory('connectivity')" id="filter-connectivity">Connectivity</button>
+                            <button class="filter-btn" onclick="filterByCategory('power')" id="filter-power">Power</button>
+                        </div>
+
+                        <div id="components-list" class="components-grid">
+                            <!-- Components will be loaded here dynamically -->
+                        </div>
+                    </aside>
+
+                    <!-- Center Panel: Canvas -->
+                    <section class="canvas-panel">
+                        <div class="canvas-header">
+                            <h2 id="canvas-title">Arduino Circuit Designer</h2>
+                            <button id="clear-canvas-btn" onclick="clearCanvas()" class="btn-primary"><i class="fas fa-trash"></i> Clear</button>
+                            <button id="generate-code-btn" onclick="generateCode()" class="btn-success"><i class="fas fa-play"></i> Generate Code</button>
+                        </div>
+                        <svg id="canvas" class="circuit-canvas"></svg>
+                        <div id="canvas-message" class="canvas-message">
+                            <p id="drag-drop-text">Drag & drop components</p>
+                            <p id="select-text">Select from left panel</p>
+                        </div>
+                    </section>
+
+                    <!-- Right Panel: Selected Component Details -->
+                    <aside class="details-panel">
+                        <h3 id="details-title">Selected Component</h3>
+                        <div id="component-details" class="details-content">
+                            <p id="no-selection">Select a component</p>
+                        </div>
+                        <div id="parts-list" class="parts-list">
+                            <h4 id="parts-title">Selected Parts</h4>
+                            <div id="parts-container" class="parts-container"></div>
+                            <div class="parts-total">
+                                <strong id="total-label">Total:</strong>
+                                <span id="total-price" class="price">$0.00</span>
+                            </div>
+                            <button id="add-to-cart-btn" onclick="addAllToCart()" class="btn-primary" style="width: 100%; margin-top: 10px;"><i class="fas fa-shopping-cart"></i> <span id="add-cart-text">Add to Cart</span></button>
+                        </div>
+                    </aside>
+                </div>
+            </section>
+
+            <!-- CODE TAB -->
+            <section id="code-tab" class="tab-content">
+                <div class="code-container">
                     <div class="code-header">
-                        <h3>Arduino Code</h3>
-                        <button id="copy-code-btn" onclick="copyCode()" class="control-btn">Copy</button>
+                        <h2 id="code-title">Generated Code</h2>
+                        <button onclick="copyCode()" class="btn-primary"><i class="fas fa-copy"></i> <span id="copy-btn-text">Copy Code</span></button>
+                        <button onclick="downloadCode()" class="btn-primary"><i class="fas fa-download"></i> <span id="download-btn-text">Download</span></button>
                     </div>
-                    <pre id="code-output" class="code-output"><code>// Select components to generate code</code></pre>
+                    <pre id="code-output" class="code-output"></pre>
+                    <div id="code-message" class="empty-message">
+                        <p id="no-code-message">You don't have a project to code yet</p>
+                        <p id="add-components-text">Add components to your schematic in the Design step to start your project.</p>
+                    </div>
                 </div>
+            </section>
 
-                <!-- Catalog Tab -->
-                <div id="catalog-tab" class="tab-content">
-                    <h3>Component Catalog</h3>
-                    <div id="catalog-content" class="catalog-content"></div>
+            <!-- CATALOG TAB -->
+            <section id="catalog-tab" class="tab-content">
+                <div class="catalog-container">
+                    <div class="catalog-header">
+                        <h2 id="catalog-title">Component Catalog</h2>
+                        <input type="text" id="catalog-search" placeholder="Search catalog..." class="search-input" onkeyup="searchCatalog()">
+                    </div>
+                    <div id="catalog-list" class="catalog-grid">
+                        <!-- Catalog items will be loaded here -->
+                    </div>
                 </div>
+            </section>
 
-                <!-- Features Tab -->
-                <div id="features-tab" class="tab-content">
-                    <h3>SynthRobs Features</h3>
-                    <div id="features-list" class="features-list"></div>
+            <!-- FEATURES TAB -->
+            <section id="features-tab" class="tab-content">
+                <div class="features-container">
+                    <h2 id="features-title">Platform Features</h2>
+                    <div id="features-list" class="features-grid">
+                        <!-- Features will be loaded here -->
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Cart Modal -->
+    <div id="cart-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeCart()">&times;</span>
+            <h2 id="cart-modal-title">Shopping Cart</h2>
+            <div id="cart-items" class="cart-items-container">
+                <!-- Cart items will be displayed here -->
+            </div>
+            <div class="cart-summary">
+                <div class="summary-row">
+                    <strong id="subtotal-label">Subtotal:</strong>
+                    <span id="subtotal" class="price">$0.00</span>
+                </div>
+                <div class="summary-row">
+                    <strong id="tax-label">Tax (18%):</strong>
+                    <span id="tax" class="price">$0.00</span>
+                </div>
+                <div class="summary-row total">
+                    <strong id="cart-total-label">Total:</strong>
+                    <span id="cart-total" class="price">$0.00</span>
                 </div>
             </div>
-
-            <!-- Right Panel - Cart & Properties -->
-            <aside class="right-panel">
-                <div class="properties-header">
-                    <h3>Selected Component</h3>
-                </div>
-                <div id="properties-content" class="properties-content">
-                    <p class="no-selection">Select a component</p>
-                </div>
-                
-                <div id="cart-preview" class="cart-preview" style="display:none">
-                    <h4>Shopping Cart</h4>
-                    <div id="cart-items" class="cart-items"></div>
-                    <div class="cart-summary">
-                        <strong>Total: ₹<span id="cart-total">0</span></strong>
-                        <button onclick="proceedCheckout()" class="checkout-btn">Checkout</button>
-                    </div>
-                </div>
-            </aside>
-        </div>
-
-        <!-- Cart Modal -->
-        <div id="cart-modal" class="modal" style="display:none">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2>Shopping Cart</h2>
-                    <button onclick="closeCart()" class="close-btn">&times;</button>
-                </div>
-                <div id="modal-cart-items" class="modal-cart-items"></div>
-                <div class="modal-footer">
-                    <div class="cart-totals">
-                        <p>Subtotal: ₹<span id="subtotal">0</span></p>
-                        <p>Shipping: ₹<span id="shipping">0</span></p>
-                        <p><strong>Total: ₹<span id="total">0</span></strong></p>
-                    </div>
-                    <div class="delivery-form">
-                        <h4>Delivery Address (भारत में)</h4>
-                        <input type="text" id="fullname" placeholder="Full Name" class="form-input">
-                        <input type="text" id="phone" placeholder="Phone Number" class="form-input">
-                        <input type="text" id="address" placeholder="Address" class="form-input">
-                        <input type="text" id="city" placeholder="City" class="form-input">
-                        <input type="text" id="pincode" placeholder="PIN Code" class="form-input">
-                        <select id="state" class="form-input">
-                            <option value="">Select State</option>
-                            <option value="AP">Andhra Pradesh</option>
-                            <option value="TG">Telangana</option>
-                            <option value="KA">Karnataka</option>
-                            <option value="TN">Tamil Nadu</option>
-                            <option value="MH">Maharashtra</option>
-                            <option value="DL">Delhi</option>
-                            <option value="UP">Uttar Pradesh</option>
-                        </select>
-                    </div>
-                    <button onclick="initiatePayment()" class="pay-btn">Pay with Razorpay</button>
-                </div>
-            </div>
+            <button id="checkout-btn" onclick="proceedToCheckout()" class="btn-success"><i class="fas fa-credit-card"></i> <span id="checkout-text">Proceed to Checkout</span></button>
         </div>
     </div>
 
+    <!-- Delivery Form Modal -->
+    <div id="delivery-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeDeliveryForm()">&times;</span>
+            <h2 id="delivery-title">Delivery Address (डिलीवरी पता)</h2>
+            <form id="delivery-form" onsubmit="submitDeliveryForm(event)" class="delivery-form">
+                <h4 id="delivery-heading">Delivery Address (डिलीवरी पता)</h4>
+                <input type="text" id="fullname" placeholder="Full Name" class="form-input" required>
+                <input type="tel" id="phone" placeholder="Phone Number" class="form-input" required>
+                <input type="text" id="address" placeholder="Address" class="form-input" required>
+                <input type="text" id="city" placeholder="City" class="form-input" required>
+                <input type="text" id="pincode" placeholder="PIN Code" class="form-input" required>
+                <select id="state" class="form-input" required>
+                    <option value="">Select State</option>
+                    <option value="AP">Andhra Pradesh</option>
+                    <option value="TG">Telangana</option>
+                    <option value="KA">Karnataka</option>
+                    <option value="TN">Tamil Nadu</option>
+                    <option value="MH">Maharashtra</option>
+                    <option value="DL">Delhi</option>
+                    <option value="UP">Uttar Pradesh</option>
+                </select>
+                <button type="submit" class="btn-success"><i class="fas fa-check"></i> <span id="submit-btn-text">Continue to Payment</span></button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts -->
     <script src="js/components-data.js"></script>
-<script src="js/main.js"></script></body>
-	</body>>
+    <script src="js/main.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/code-generator.js"></script>
+    <script src="js/language.js"></script>
+</body>
+</html>
