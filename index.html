@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Circuito Clone - Arduino Circuit Designer</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="app" class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <h1 class="logo">circuito.io</h1>
+            </div>
+            <div class="header-right">
+                <button id="cart-btn" class="cart-button">Parts (0)</button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="main-container">
+            <!-- Left Panel - Components -->
+            <aside class="left-panel">
+                <div class="search-container">
+                    <input type="text" id="component-search" placeholder="Search for a component" class="search-input">
+                </div>
+
+                <div class="filter-buttons">
+                    <button class="filter-btn active" data-filter="all">All</button>
+                    <button class="filter-btn" data-filter="controllers">Controllers</button>
+                    <button class="filter-btn" data-filter="inputs">Inputs</button>
+                    <button class="filter-btn" data-filter="outputs">Outputs</button>
+                    <button class="filter-btn" data-filter="power">Power</button>
+                </div>
+
+                <div id="components-grid" class="components-grid"></div>
+            </aside>
+
+            <!-- Center Panel - Canvas/Design Area -->
+            <div class="center-panel">
+                <div class="tabs">
+                    <button class="tab-btn active" data-tab="design">DESIGN</button>
+                    <button class="tab-btn" data-tab="code">CODE</button>
+                    <button class="tab-btn" data-tab="guide">PROJECT GUIDE</button>
+                </div>
+
+                <!-- Design Tab -->
+                <div id="design-tab" class="tab-content active">
+                    <div class="canvas-header">
+                        <h2 id="project-title">Arduino Circuit Designer</h2>
+                        <div class="canvas-controls">
+                            <button id="clear-btn" class="control-btn">Clear</button>
+                            <button id="generate-btn" class="control-btn primary">Generate Code</button>
+                        </div>
+                    </div>
+                    <div id="canvas-container" class="canvas-container">
+                        <svg id="canvas" class="canvas"></svg>
+                        <div id="canvas-placeholder" class="canvas-placeholder">
+                            <div class="placeholder-content">
+                                <h3>Drag & drop components here</h3>
+                                <p>Select a component from the left panel and drag it to the canvas</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Code Tab -->
+                <div id="code-tab" class="tab-content">
+                    <div class="code-header">
+                        <h3>Generated Arduino Code</h3>
+                        <button id="copy-code-btn" class="control-btn">Copy Code</button>
+                    </div>
+                    <pre id="code-output" class="code-output"><code>// Select components to generate code</code></pre>
+                </div>
+
+                <!-- Guide Tab -->
+                <div id="guide-tab" class="tab-content">
+                    <div class="guide-content">
+                        <h3>Project Guide</h3>
+                        <div id="guide-steps" class="guide-steps"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel - Properties -->
+            <aside class="right-panel">
+                <div class="properties-header">
+                    <h3>Properties</h3>
+                </div>
+                <div id="properties-content" class="properties-content">
+                    <p class="no-selection">Select a component to see properties</p>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/components.js"></script>
+    <script src="js/wiring.js"></script>
+    <script src="js/canvas.js"></script>
+    <script src="js/generator.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
