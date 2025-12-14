@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('SynthRobs Initializing...');
     renderComponentList();
     setupEventListeners();
-    setupTabSwitching();
+//     setupTabSwitching();
     loadCatalogTab();
     loadFeaturesTab();
     updateCartCount();
