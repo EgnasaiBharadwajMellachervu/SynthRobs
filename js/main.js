@@ -1,9 +1,5 @@
 // SynthRobs Main Application
 // Complete working implementation
-
-// Component Database from components-data.js is loaded separately
-// This main.js handles UI logic, event listeners, and tab management
-
 let cart = [];
 let selectedComponents = [];
 
@@ -15,61 +11,29 @@ document.addEventListener('DOMContentLoaded', function() {
     setupTabSwitching();
     loadCatalogTab();
     loadFeaturesTab();
+    updateCartCount();
     console.log('SynthRobs Ready!');
 });
 
 // Render Components in the Left Panel
 function renderComponentList() {
     const componentsList = document.getElementById('components-list');
-    if (!componentsList) {
-        console.error('components-list element not found');
-        return;
-    }
+    if (!componentsList) return;
     
     componentsList.innerHTML = '';
     
-    // Use COMPONENTS_DB if available, otherwise use sample data
-    const components = window.COMPONENTS_DB || {
-        controllers: [
-            { id: 'uno', name: 'Arduino Uno', icon: '🎛️', pins: 14, price: 2500 },
-            { id: 'nano', name: 'Arduino Nano', icon: '🎛️', pins: 12, price: 800 },
-            { id: 'mega', name: 'Arduino Mega', icon: '🎛️', pins: 54, price: 4500 }
-        ],
-        inputs: [
-            { id: 'button', name: 'Button', icon: '⭕', pins: 1, price: 100 },
-            { id: 'pot', name: 'Potentiometer', icon: '📊', pins: 3, price: 150 },
-            { id: 'light', name: 'Light Sensor', icon: '💡', pins: 1, price: 200 },
-            { id: 'temp', name: 'Temperature', icon: '🌡️', pins: 1, price: 300 },
-            { id: 'ultra', name: 'Ultrasonic', icon: '📡', pins: 2, price: 250 }
-        ],
-        outputs: [
-            { id: 'led', name: 'LED', icon: '💡', pins: 2, price: 50 },
-            { id: 'buzzer', name: 'Buzzer', icon: '🔊', pins: 2, price: 120 },
-            { id: 'servo', name: 'Servo Motor', icon: '⚙️', pins: 3, price: 800 },
-            { id: 'dcmotor', name: 'DC Motor', icon: '⚙️', pins: 2, price: 600 },
-            { id: 'lcd', name: 'LCD Display', icon: '📺', pins: 16, price: 1200 }
-        ],
-        modules: [
-            { id: 'wifi', name: 'WiFi Module', icon: '📡', pins: 5, price: 2000 },
-            { id: 'bluetooth', name: 'Bluetooth', icon: '📱', pins: 4, price: 1500 }
-        ],
-        power: [
-            { id: 'battery5v', name: '5V Battery', icon: '🔋', pins: 2, price: 400 },
-            { id: 'battery9v', name: '9V Battery', icon: '🔋', pins: 2, price: 600 }
-        ]
-    };
-    
-    // Combine all components
-    const allComponents = [
-        ...components.controllers,
-        ...components.inputs,
-        ...components.outputs,
-        ...components.modules,
-        ...components.power
+    const components = [
+        { id: 'uno', name: 'Arduino Uno', icon: '🎡', pins: 14, price: 2500 },
+        { id: 'nano', name: 'Arduino Nano', icon: '🎡', pins: 12, price: 800 },
+        { id: 'button', name: 'Button', icon: '⭕', pins: 1, price: 100 },
+        { id: 'pot', name: 'Potentiometer', icon: '📊', pins: 3, price: 150 },
+        { id: 'led', name: 'LED', icon: '💻', pins: 2, price: 50 },
+        { id: 'servo', name: 'Servo Motor', icon: '⚙️', pins: 3, price: 800 },
+        { id: 'lcd', name: 'LCD Display', icon: '📋', pins: 16, price: 1200 },
+        { id: 'wifi', name: 'WiFi Module', icon: '📱', pins: 5, price: 2000 }
     ];
     
-    // Render each component
-    allComponents.forEach(comp => {
+    components.forEach(comp => {
         const div = document.createElement('div');
         div.className = 'component-item';
         div.draggable = true;
@@ -85,7 +49,6 @@ function renderComponentList() {
         });
         
         div.addEventListener('click', () => selectComponent(comp));
-        
         componentsList.appendChild(div);
     });
 }
@@ -126,34 +89,23 @@ function updateSelectedParts() {
         total += comp.price;
     });
     
-    if (priceEl) priceEl.textContent = '$' + (total / 100).toFixed(2);
+    if (priceEl) priceEl.textContent = '₹' + total;
 }
 
 // Setup Event Listeners
 function setupEventListeners() {
-    // Search
     const search = document.getElementById('component-search');
     if (search) search.addEventListener('input', filterComponents);
     
-    // Category Filters
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.addEventListener('click', (e) => filterByCategory(e.target.textContent));
     });
     
-    // Clear Button
     const clearBtn = document.getElementById('clear-canvas-btn');
-    if (clearBtn) clearBtn.addEventListener('click', () => {
-        selectedComponents = [];
-        updateSelectedParts();
-    });
+    if (clearBtn) clearBtn.addEventListener('click', clearCanvas);
     
-    // Generate Code
     const genBtn = document.getElementById('generate-code-btn');
     if (genBtn) genBtn.addEventListener('click', generateCode);
-    
-    // Add to Cart
-    const cartBtn = document.getElementById('add-to-cart-btn');
-    if (cartBtn) cartBtn.addEventListener('click', addToCart);
 }
 
 // Filter Components
@@ -172,8 +124,13 @@ function filterComponents(e) {
 
 // Filter by Category
 function filterByCategory(category) {
-    console.log('Filter by:', category);
     renderComponentList();
+}
+
+// Clear Canvas
+function clearCanvas() {
+    selectedComponents = [];
+    updateSelectedParts();
 }
 
 // Generate Code
@@ -183,17 +140,14 @@ function generateCode() {
     
     let code = `// SynthRobs Generated Arduino Code\n// Date: ${new Date().toLocaleString()}\n\n`;
     code += `#include <Arduino.h>\n\n`;
-    code += `void setup() {\n  Serial.begin(9600);\n  Serial.println(\"SynthRobs Ready!\");\n}\n\n`;
-    code += `void loop() {\n  // Add your code here\n  delay(1000);\n}\n`;
+    code += `void setup() {\n    Serial.begin(9600);\n    Serial.println(\"SynthRobs Ready!\");\n}\n\n`;
+    code += `void loop() {\n    // Add your code here\n    delay(1000);\n}\n`;
     
-    const pre = document.createElement('pre');
-    pre.textContent = code;
-    codeOutput.innerHTML = '';
-    codeOutput.appendChild(pre);
+    codeOutput.innerHTML = '<pre>' + code + '</pre>';
 }
 
 // Add to Cart
-function addToCart() {
+function addAllToCart() {
     if (selectedComponents.length === 0) {
         alert('Please select a component first!');
         return;
@@ -212,56 +166,129 @@ function updateCartCount() {
 // Setup Tab Switching
 function setupTabSwitching() {
     document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => switchTab(e.target.id));
+        btn.addEventListener('click', (e) => switchTab(e.target.id.replace('-btn', '')));
     });
 }
 
 // Switch Tabs
-function switchTab(tabId) {
+function switchTab(tabName) {
+    // Hide all tabs
     document.querySelectorAll('.tab-content').forEach(tab => {
         tab.classList.remove('active');
     });
+    
+    // Deactivate all buttons
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.classList.remove('active');
     });
     
-    const tabId2 = tabId.replace('-btn', '-tab');
-    const activeTab = document.getElementById(tabId2);
-    if (activeTab) activeTab.classList.add('active');
+    // Show active tab
+    const tabId = tabName + '-tab';
+    const activeTab = document.getElementById(tabId);
+    if (activeTab) {
+        activeTab.classList.add('active');
+    }
     
-    const activeBtn = document.getElementById(tabId);
-    if (activeBtn) activeBtn.classList.add('active');
+    // Activate button
+    const btnId = tabName + '-btn';
+    const activeBtn = document.getElementById(btnId);
+    if (activeBtn) {
+        activeBtn.classList.add('active');
+    }
+    
+    // Load content when switching tabs
+    if (tabName === 'catalog') {
+        loadCatalogTab();
+    } else if (tabName === 'features') {
+        loadFeaturesTab();
+    } else if (tabName === 'code') {
+        // Code tab will show generated code
+    }
 }
 
 // Load Catalog Tab
 function loadCatalogTab() {
-    const catalog = document.getElementById('catalog-list');
-    if (!catalog) return;
+    const catalogList = document.getElementById('catalog-list');
+    if (!catalogList) return;
     
-    catalog.innerHTML = '<p>Component Catalog - All Arduino components available for purchase</p>';
+    const components = [
+        { name: 'Arduino Uno', price: '₹2,500', desc: 'Most popular Arduino board' },
+        { name: 'LED', price: '₹50', desc: 'Light Emitting Diode' },
+        { name: 'Button', price: '₹100', desc: 'Push button switch' },
+        { name: 'Potentiometer', price: '₹150', desc: 'Variable resistor' },
+        { name: 'Light Sensor', price: '₹200', desc: 'Photoresistor LDR' },
+        { name: 'Temperature Sensor', price: '₹300', desc: 'DS18B20 Digital' },
+        { name: 'Ultrasonic Sensor', price: '₹250', desc: 'HC-SR04 Distance sensor' },
+        { name: 'Servo Motor', price: '₹800', desc: 'SG90 Servo' },
+        { name: 'DC Motor', price: '₹600', desc: 'Small DC motor' },
+        { name: '16x2 LCD Display', price: '₹1,200', desc: 'Alphanumeric LCD' },
+        { name: 'WiFi Module', price: '₹2,000', desc: 'ESP8266 WiFi' },
+        { name: 'Bluetooth Module', price: '₹1,500', desc: 'HC-05 Bluetooth' }
+    ];
+    
+    catalogList.innerHTML = components.map(comp => `
+        <div style="padding:15px; border:1px solid #ddd; margin:10px 0; border-radius:5px;">
+            <h4 style="margin:0 0 5px 0;">${comp.name}</h4>
+            <p style="margin:0 0 5px 0; color:#666;">${comp.desc}</p>
+            <p style="margin:0; font-weight:bold; color:#007bff;">${comp.price}</p>
+        </div>
+    `).join('');
 }
 
 // Load Features Tab
 function loadFeaturesTab() {
-    const features = document.getElementById('features-list');
-    if (!features) return;
+    const featuresList = document.getElementById('features-list');
+    if (!featuresList) return;
     
-    features.innerHTML = `
-        <div class="feature-item">
-            <h3>🎯 Drag & Drop Interface</h3>
-            <p>Easily design circuits by dragging components onto the canvas</p>
+    const features = [
+        { icon: '🎯', title: 'Drag & Drop Design', desc: 'Easily build circuits by dragging components' },
+        { icon: '💻', title: 'Code Generation', desc: 'Auto-generate Arduino code from your design' },
+        { icon: '📚', title: 'Component Library', desc: 'Access 100+ Arduino-compatible components' },
+        { icon: '🛒', title: 'E-Commerce', desc: 'Buy components directly with one click' },
+        { icon: '⚡', title: 'Real-time Preview', desc: 'See your circuit layout in real-time' },
+        { icon: '📖', title: 'Documentation', desc: 'Detailed guides for every component' }
+    ];
+    
+    featuresList.innerHTML = features.map(feat => `
+        <div style="padding:15px; border:1px solid #ddd; margin:10px 0; border-radius:5px;">
+            <h4 style="margin:0 0 5px 0;">${feat.icon} ${feat.title}</h4>
+            <p style="margin:0; color:#666;">${feat.desc}</p>
         </div>
-        <div class="feature-item">
-            <h3>💻 Code Generation</h3>
-            <p>Automatically generate Arduino code from your circuit design</p>
-        </div>
-        <div class="feature-item">
-            <h3>🛒 Easy Shopping</h3>
-            <p>Browse and purchase components directly from the catalog</p>
-        </div>
-        <div class="feature-item">
-            <h3>📦 Component Library</h3>
-            <p>Access a comprehensive library of Arduino-compatible components</p>
-        </div>
-    `;
+    `).join('');
+}
+
+// Show Cart
+function showCart() {
+    const modal = document.getElementById('cart-modal');
+    if (modal) modal.style.display = 'block';
+}
+
+// Close Cart
+function closeCart() {
+    const modal = document.getElementById('cart-modal');
+    if (modal) modal.style.display = 'none';
+}
+
+// Copy Code
+function copyCode() {
+    const code = document.getElementById('code-output');
+    if (code) {
+        const text = code.textContent;
+        navigator.clipboard.writeText(text);
+        alert('Code copied to clipboard!');
+    }
+}
+
+// Download Code
+function downloadCode() {
+    const code = document.getElementById('code-output');
+    if (code) {
+        const element = document.createElement('a');
+        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(code.textContent));
+        element.setAttribute('download', 'sketch.ino');
+        element.style.display = 'none';
+        document.body.appendChild(element);
+        element.click();
+        document.body.removeChild(element);
+    }
 }
